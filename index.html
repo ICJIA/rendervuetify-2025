@@ -237,6 +237,26 @@
       .loading-button .button-text {
         opacity: 0;
       }
+
+      .button-group-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .copy-btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        background-color: #9c27b0;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .copy-btn:hover {
+        background-color: #7b1fa2;
+      }
     </style>
   </head>
   <body>
@@ -265,7 +285,14 @@
 
       <div class="grid">
         <div>
-          <h2 style="font-size: 1.2rem; font-weight: 500">Vuetify Code</h2>
+          <div class="header-actions">
+            <h2 style="font-size: 1.2rem; font-weight: 500; margin: 0">
+              Vuetify Code
+            </h2>
+            <button class="format-btn" onclick="formatVuetifyCode()">
+              <i class="mdi mdi-format-align-left"></i> Format
+            </button>
+          </div>
           <textarea id="vuetifyInput" placeholder="Enter Vuetify code here...">
 <v-app>
   <v-main>
@@ -291,9 +318,14 @@
             <h2 style="font-size: 1.2rem; font-weight: 500; margin: 0">
               Rendered HTML Output
             </h2>
-            <button class="format-btn" onclick="formatCode()">
-              <i class="mdi mdi-format-align-left"></i> Format
-            </button>
+            <div class="button-group-actions">
+              <button class="copy-btn" onclick="copyToClipboard()">
+                <i class="mdi mdi-content-copy"></i> Copy
+              </button>
+              <button class="format-btn" onclick="formatCode()">
+                <i class="mdi mdi-format-align-left"></i> Format
+              </button>
+            </div>
           </div>
           <div
             id="outputHtml"
@@ -387,6 +419,55 @@
           outputHtml.textContent = formatted;
         } catch (err) {
           console.error("Format error:", err);
+        }
+      }
+
+      /**
+       * Formats Vuetify code in the input textarea
+       * Uses HTML parser with specific formatting options
+       * @function
+       * @returns {void}
+       */
+      function formatVuetifyCode() {
+        const textarea = document.getElementById("vuetifyInput");
+        try {
+          const formatted = prettier.format(textarea.value, {
+            parser: "html",
+            plugins: prettierPlugins,
+            printWidth: 80,
+            tabWidth: 2,
+            useTabs: false,
+            htmlWhitespaceSensitivity: "ignore",
+          });
+          textarea.value = formatted;
+        } catch (err) {
+          console.error("Format error:", err);
+        }
+      }
+
+      /**
+       * Copies the HTML output to clipboard
+       * Shows temporary success message in button
+       * @function
+       * @returns {Promise<void>}
+       */
+      async function copyToClipboard() {
+        const outputHtml = document.getElementById("outputHtml");
+        const copyBtn = document.querySelector('.copy-btn');
+        const originalText = copyBtn.innerHTML;
+        
+        try {
+          await navigator.clipboard.writeText(outputHtml.textContent);
+          copyBtn.innerHTML = '<i class="mdi mdi-check"></i> Copied!';
+          setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          copyBtn.innerHTML = '<i class="mdi mdi-close"></i> Failed';
+          setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+          }, 2000);
         }
       }
 
