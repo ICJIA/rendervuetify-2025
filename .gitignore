@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+jspm_packages/
+bower_components/
+
+# Testing
+coverage/
+.nyc_output
+.scannerwork
+
+# Production
+build/
+dist/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# IDE - Eclipse
+.project
+.classpath
+.settings/
+
+# System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Misc
+*.log
+*.swp
+*.bak
