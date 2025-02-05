@@ -267,7 +267,11 @@
     </div>
 
     <script>
-      // Add default template constant at the top
+      /**
+       * Default Vuetify template used for initial render and reset state
+       * Contains a basic card component with title, text, and action button
+       * @constant {string}
+       */
       const DEFAULT_TEMPLATE = `<v-app>
   <v-main>
     <v-container>
@@ -282,10 +286,16 @@
   </v-main>
 </v-app>`;
 
-      // Modified theme initialization to default to dark
+      // Initialize theme from localStorage or default to dark mode
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
 
+      /**
+       * Toggles between light and dark theme
+       * Updates both DOM and localStorage with new theme
+       * @function
+       * @returns {void}
+       */
       function toggleTheme() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-theme');
@@ -294,10 +304,17 @@
         localStorage.setItem('theme', newTheme);
       }
 
-      // Add format function before existing scripts
+      /**
+       * Formats HTML code in the output window using Prettier
+       * Uses HTML parser with specific formatting options
+       * @function
+       * @returns {void}
+       * @throws {Error} When formatting fails
+       */
       function formatCode() {
         const outputHtml = document.getElementById("outputHtml");
         try {
+          // Configure Prettier with specific HTML formatting options
           const formatted = prettier.format(outputHtml.textContent, {
             parser: "html",
             plugins: prettierPlugins,
@@ -312,25 +329,39 @@
         }
       }
 
-      // Add reset function
+      /**
+       * Resets the application state to default values
+       * - Restores default template
+       * - Sets theme to dark mode
+       * - Clears error messages
+       * - Re-renders the code
+       * @function
+       * @returns {void}
+       */
       function resetState() {
-        // Reset editor content
+        // Reset editor content to default template
         document.getElementById("vuetifyInput").value = DEFAULT_TEMPLATE;
         
-        // Reset theme to dark
+        // Force dark theme
         document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
         
-        // Clear any error messages
+        // Clear any existing error messages
         const errorDisplay = document.getElementById("errorDisplay");
         errorDisplay.style.display = "none";
         
-        // Re-render the code
+        // Trigger new render with default template
         renderVuetifyCode();
       }
 
-      // Wait for Vue and Vuetify to be fully loaded
+      /**
+       * Initializes the application when the window loads
+       * Checks for required dependencies and sets up event listeners
+       * @function
+       * @returns {void}
+       */
       window.onload = function () {
+        // Verify required dependencies are loaded
         if (!window.Vue) {
           console.error("Vue not loaded");
           return;
@@ -340,58 +371,71 @@
           return;
         }
 
+        // Set up render button click handler
         const renderButton = document.getElementById("renderButton");
         renderButton.addEventListener("click", renderVuetifyCode);
 
-        // Initial render
+        // Perform initial render
         renderVuetifyCode();
       };
 
+      // Track current Vue instance for cleanup
       let currentApp = null;
 
+      /**
+       * Renders Vuetify code from the input textarea
+       * Creates a new Vue instance, renders the template, and updates both HTML output and preview
+       * @function
+       * @async
+       * @returns {Promise<void>}
+       * @throws {Error} When rendering fails
+       */
       async function renderVuetifyCode() {
+        // Get required DOM elements
         const vuetifyCode = document.getElementById("vuetifyInput").value;
         const outputHtml = document.getElementById("outputHtml");
         const previewSection = document.getElementById("previewSection");
         const errorDisplay = document.getElementById("errorDisplay");
 
         try {
+          // Hide any previous error messages
           errorDisplay.style.display = "none";
 
-          // Clean up previous instance if it exists
+          // Cleanup previous Vue instance if it exists
           if (currentApp) {
             currentApp.unmount();
           }
 
-          // Create a temporary container
+          // Create temporary container for Vue mounting
           const container = document.createElement("div");
           container.style.display = "block";
           document.body.appendChild(container);
 
-          // Create Vue app
+          // Initialize new Vue application with user's template
           const { createApp } = Vue;
           const app = createApp({
             template: vuetifyCode,
           });
 
-          // Create Vuetify instance
+          // Configure Vuetify plugin
           const vuetify = Vuetify.createVuetify();
           app.use(vuetify);
 
-          // Mount app
+          // Mount the application and store reference
           const vm = app.mount(container);
           currentApp = app;
 
-          // Get rendered HTML
+          // Extract rendered HTML content
           const renderedContent = container.innerHTML;
 
-          // Update output
+          // Update both output displays
           outputHtml.textContent = renderedContent;
           previewSection.innerHTML = renderedContent;
 
-          // Cleanup
+          // Remove temporary container
           document.body.removeChild(container);
         } catch (err) {
+          // Handle and display any rendering errors
           console.error("Render error:", err);
           errorDisplay.textContent = `Error rendering Vuetify code: ${err.message}`;
           errorDisplay.style.display = "block";
