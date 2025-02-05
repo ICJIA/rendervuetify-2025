@@ -40,7 +40,7 @@
       [data-theme="dark"] {
         --background-color: #121212;
         --container-bg: #1e1e1e;
-        --text-color: #98c379;  /* Changed to a comfortable green shade */
+        --text-color: #98c379; /* Changed to a comfortable green shade */
         --border-color: #333;
       }
 
@@ -50,7 +50,9 @@
         font-size: 0.875rem;
         line-height: 1.25rem;
         color: var(--text-color);
-        background-color: var(--container-bg) !important;  /* Added to ensure proper background in dark mode */
+        background-color: var(
+          --container-bg
+        ) !important; /* Added to ensure proper background in dark mode */
       }
 
       .loading {
@@ -107,10 +109,17 @@
         z-index: 1;
       }
 
-      .reset-btn {
+      .button-group {
         position: absolute;
         top: 1rem;
         left: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        z-index: 1;
+      }
+
+      .reset-btn,
+      .clear-btn {
         cursor: pointer;
         padding: 0.5rem 1rem;
         border-radius: 4px;
@@ -122,10 +131,10 @@
         color: var(--text-color);
         height: 40px;
         margin-bottom: 10px;
-        z-index: 1;
       }
 
-      .reset-btn:hover {
+      .reset-btn:hover,
+      .clear-btn:hover {
         background: rgba(0, 0, 0, 0.1);
       }
 
@@ -190,17 +199,67 @@
       .format-btn:hover {
         background-color: #43a047;
       }
+
+      .loading-button {
+        position: relative;
+        cursor: wait !important;
+      }
+
+      .loading-button::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        border: 3px solid transparent;
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: button-loading-spinner 1s ease infinite;
+      }
+
+      @keyframes button-loading-spinner {
+        from {
+          transform: rotate(0turn);
+        }
+        to {
+          transform: rotate(1turn);
+        }
+      }
+
+      .button-text {
+        transition: opacity 0.2s;
+      }
+
+      .loading-button .button-text {
+        opacity: 0;
+      }
     </style>
   </head>
   <body>
-    <button class="reset-btn" onclick="resetState()">
-      <i class="mdi mdi-restore"></i> Reset
-    </button>
+    <div class="button-group">
+      <button class="reset-btn" onclick="resetState()">
+        <i class="mdi mdi-restore"></i> Reset to Default
+      </button>
+      <button class="clear-btn" onclick="clearEditor()">
+        <i class="mdi mdi-close"></i> Clear All
+      </button>
+    </div>
     <div class="theme-switch" onclick="toggleTheme()">
       <i class="mdi mdi-theme-light-dark"></i>
     </div>
     <div class="container">
-      <h1 style="margin-bottom: 2rem; font-size: 1.5rem; font-weight: 600">
+      <h1
+        style="
+          margin-bottom: 2rem;
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-top: 20px;
+        "
+      >
         Vuetify Code Renderer
       </h1>
 
@@ -222,7 +281,9 @@
   </v-main>
 </v-app></textarea
           >
-          <button id="renderButton">Render Code</button>
+          <button id="renderButton" onclick="renderVuetifyCode()">
+            <span class="button-text">Render Code</span>
+          </button>
         </div>
 
         <div>
@@ -287,8 +348,8 @@
 </v-app>`;
 
       // Initialize theme from localStorage or default to dark mode
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
 
       /**
        * Toggles between light and dark theme
@@ -298,10 +359,10 @@
        */
       function toggleTheme() {
         const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
       }
 
       /**
@@ -321,7 +382,7 @@
             printWidth: 80,
             tabWidth: 2,
             useTabs: false,
-            htmlWhitespaceSensitivity: "ignore"
+            htmlWhitespaceSensitivity: "ignore",
           });
           outputHtml.textContent = formatted;
         } catch (err) {
@@ -341,17 +402,35 @@
       function resetState() {
         // Reset editor content to default template
         document.getElementById("vuetifyInput").value = DEFAULT_TEMPLATE;
-        
+
         // Force dark theme
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        
+        document.documentElement.setAttribute("data-theme", "dark");
+        localStorage.setItem("theme", "dark");
+
         // Clear any existing error messages
         const errorDisplay = document.getElementById("errorDisplay");
         errorDisplay.style.display = "none";
-        
+
         // Trigger new render with default template
         renderVuetifyCode();
+      }
+
+      /**
+       * Clears the editor content and renders an empty preview
+       * @function
+       * @returns {void}
+       */
+      function clearEditor() {
+        // Clear editor content
+        document.getElementById("vuetifyInput").value = "";
+
+        // Clear any existing error messages
+        const errorDisplay = document.getElementById("errorDisplay");
+        errorDisplay.style.display = "none";
+
+        // Clear outputs
+        document.getElementById("outputHtml").textContent = "";
+        document.getElementById("previewSection").innerHTML = "";
       }
 
       /**
@@ -371,16 +450,28 @@
           return;
         }
 
-        // Set up render button click handler
-        const renderButton = document.getElementById("renderButton");
-        renderButton.addEventListener("click", renderVuetifyCode);
-
         // Perform initial render
         renderVuetifyCode();
       };
 
       // Track current Vue instance for cleanup
       let currentApp = null;
+
+      /**
+       * Sets the loading state of the render button
+       * @function
+       * @param {boolean} isLoading - Whether to show loading state
+       */
+      function setButtonLoading(isLoading) {
+        const button = document.getElementById("renderButton");
+        if (isLoading) {
+          button.classList.add('loading-button');
+          button.disabled = true;
+        } else {
+          button.classList.remove('loading-button');
+          button.disabled = false;
+        }
+      }
 
       /**
        * Renders Vuetify code from the input textarea
@@ -391,6 +482,8 @@
        * @throws {Error} When rendering fails
        */
       async function renderVuetifyCode() {
+        setButtonLoading(true);
+        
         // Get required DOM elements
         const vuetifyCode = document.getElementById("vuetifyInput").value;
         const outputHtml = document.getElementById("outputHtml");
@@ -441,6 +534,8 @@
           errorDisplay.style.display = "block";
           outputHtml.textContent = "";
           previewSection.innerHTML = "";
+        } finally {
+          setButtonLoading(false);
         }
       }
     </script>
